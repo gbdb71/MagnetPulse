@@ -21,6 +21,8 @@ function preload() {
 
 	game.load.spritesheet("player", "img/CharacterSpritesheet.png", 48, 48, 5);
 
+	game.load.spritesheet("question", "img/QuestionSpritesheet.png", 48, 48, 4);
+
 	game.load.image("player_top_left_piece", "img/CharacterShatter1.png");
 	game.load.image("player_top_right_piece", "img/CharacterShatter2.png");
 	game.load.image("player_bottom_left_piece", "img/CharacterShatter3.png");
@@ -66,6 +68,7 @@ var WALL = 5;
 var STONE_BLOCK = 6;
 var PUSH_BLOCK = 7;
 var PULL_BLOCK = 8;
+var NPC = 9;
 
 // Effect Types
 var BEAM = 1;
@@ -86,8 +89,9 @@ entityDic[DOOR] = {image: ["door_0", "door_1", "door_2"]};
 entityDic[STONE_BLOCK] = {image: "stone"};
 entityDic[PUSH_BLOCK] = {image: "push"};
 entityDic[PULL_BLOCK] = {image: "pull"};
+entityDic[NPC] = {image: "question"};
 
-var SOLID_TYPES_BLOCK = [WALL, STONE_BLOCK, PULL_BLOCK, PUSH_BLOCK, DOOR];
+var SOLID_TYPES_BLOCK = [WALL, STONE_BLOCK, PULL_BLOCK, PUSH_BLOCK, DOOR, NPC];
 var PUSH_TYPES_PLAYER = [STONE_BLOCK, PULL_BLOCK, PUSH_BLOCK];
 var REACTS_TO_PULSE = [PULL_BLOCK, PUSH_BLOCK];
 var INTERACT_WITH_GROUND = [STONE_BLOCK, PULL_BLOCK, PUSH_BLOCK, TYPE_PLAYER];
@@ -135,6 +139,7 @@ var beamSound;
 var switchSound;
 var deathSound;
 var fallSound;
+var npcSound;
 
 var playerDeathReset;
 
@@ -245,6 +250,10 @@ function Entity (x, y, type, data) {
 		this.sprite = game.add.sprite(screenX + (PX_SIZE / 2), screenY + (PX_SIZE / 2), entityDic[this.type].image[this.data.channel]);
 		this.sprite.animations.add("pulse");
 		this.sprite.animations.play("pulse", 20, true);
+	} else if (this.type === NPC) {
+		this.sprite = game.add.sprite(screenX + (PX_SIZE / 2), screenY + (PX_SIZE / 2), entityDic[this.type].image);
+		this.sprite.animations.add("hover");
+		this.sprite.animations.play("hover", 10, true);
 	} else if (this.type === TYPE_PLAYER) {
 		this.sprite = game.add.sprite(screenX + (PX_SIZE / 2), screenY + (PX_SIZE / 2), entityDic[this.type].image, 0);
 	} else if (this.type === HOLE) {
@@ -344,7 +353,7 @@ function Entity (x, y, type, data) {
 
 				if (curEntity.inTypeArray(SOLID_TYPES_BLOCK)) {
 					if (curEntity.type === DOOR && channels[curEntity.data.channel].on) {
-
+						// Do nothing, allow entity to move through
 					} else {
 						if (this.type === TYPE_PLAYER) {
 							if (curEntity.inTypeArray(PUSH_TYPES_PLAYER)) {
@@ -353,6 +362,12 @@ function Entity (x, y, type, data) {
 									this.move(xDiff, yDiff, true);
 									return;
 								}
+							}
+							else if (curEntity.type === NPC)
+							{
+								// Show this level's NPC message
+								var mainText = document.getElementById("MainText")
+								mainText.innerText = levelInfo[curLevelIndex].text;
 							}
 						}
 						xDiff = 0;
@@ -632,6 +647,7 @@ function create() {
 	switchSound = game.add.audio("switch_sfx");
 	deathSound = game.add.audio("death_sfx");
 	fallSound = game.add.audio("fall_sfx");
+	npcSound = game.add.audio("switch_sfx");
 
 	game.onPause.add(onGamePause, this);
 	game.onResume.add(onGameResume, this);
@@ -1000,6 +1016,9 @@ function loadLevel (levelIndex) {
 	} else {
 		loadLevelActual(levelIndex);
 	}
+	// Reset main text
+	var mainText = document.getElementById("MainText")
+	mainText.innerText = " ";
 }
 
 var curLevelIndex;
@@ -1012,6 +1031,7 @@ function loadLevelActual (levelIndex) {
 			var newType;
 			var newChannel;
 			switch (levelArray[i][j]) {
+				default:
 				case ".":
 					newType = undefined;
 					break;
@@ -1053,6 +1073,9 @@ function loadLevelActual (levelIndex) {
 				case "z":
 					newType = SWITCH;
 					newChannel = 2;
+					break;
+				case "Q":
+					newType = NPC;
 					break;
 			}
 
