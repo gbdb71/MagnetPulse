@@ -136,6 +136,8 @@ var switchSound;
 var deathSound;
 var fallSound;
 
+var playerDeathReset;
+
 function Tile () {
 	this.entities = [];
 
@@ -251,6 +253,7 @@ function Entity (x, y, type, data) {
 		this.sprite = game.add.sprite(screenX + (PX_SIZE / 2), screenY + (PX_SIZE / 2), entityDic[this.type].image);
 	}
 	this.sprite.anchor.setTo(0.5, 0.5);
+	spriteLayer.add(this.sprite);
 
 	this.inTypeArray = function (typeArray) {
 		return inTypeArray(this, typeArray);
@@ -294,6 +297,7 @@ function Entity (x, y, type, data) {
 				if (xPos < 0) {
 					playerStartX = GRID_X - 1;
 					playerStartY = this.y;
+					transitionType = "left";
 					if (levelInfo[curLevelIndex].advance === "left") {
 						loadLevel(curLevelIndex + 1);
 					} else {
@@ -303,6 +307,7 @@ function Entity (x, y, type, data) {
 				if (xPos >= GRID_X) {
 					playerStartX = 0;
 					playerStartY = this.y;
+					transitionType = "right";
 					if (levelInfo[curLevelIndex].advance === "right") {
 						loadLevel(curLevelIndex + 1);
 					} else {
@@ -312,6 +317,7 @@ function Entity (x, y, type, data) {
 				if (yPos < 0) {
 					playerStartX = this.x;
 					playerStartY = GRID_Y - 1;
+					transitionType = "up";
 					if (levelInfo[curLevelIndex].advance === "up") {
 						loadLevel(curLevelIndex + 1);
 					} else {
@@ -321,6 +327,7 @@ function Entity (x, y, type, data) {
 				if (yPos >= GRID_Y) {
 					playerStartX = this.x;
 					playerStartY = 0;
+					transitionType = "down";
 					if (levelInfo[curLevelIndex].advance === "down") {
 						loadLevel(curLevelIndex + 1);
 					} else {
@@ -442,8 +449,8 @@ function Entity (x, y, type, data) {
 		if (this.type === TYPE_PLAYER) {
 			// this.markedForDeletion = false;
 			if (this.fallen) {
-				setTimeout(function(){
-					console.log("Reset level!!");
+				playerDeathReset = setTimeout(function(){
+					reset();
 				}, 1000);
 			}
 			// return;
@@ -486,6 +493,7 @@ function Effect (x, y, type, graphics, lifespan) {
 
 	this.sprite = game.add.sprite(this.screenX + (PX_SIZE / 2), this.screenY + (PX_SIZE / 2), graphics);
 	this.sprite.anchor.setTo(0.5, 0.5);
+	spriteLayer.add(this.sprite);
 
 	if (this.type === BEAM_VERT) {
 		this.sprite.rotation = Math.PI/2;
@@ -585,9 +593,13 @@ function inTypeArray (entity, typeArray) {
 	return typeArray.indexOf(entity.type) >= 0;
 }
 
-var redSquare;
-var blueSquare;
-var graySquare;
+var blackSquare;
+var transitionSprite;
+// var blueSquare;
+// var graySquare;
+
+var spriteLayer;
+var HUDLayer;
 
 var player;
 
@@ -596,26 +608,23 @@ function create() {
 	// game.add.image(0, 0, 'sky');
 
 	var tempGraphics = game.add.graphics(0, 0);
-	tempGraphics.beginFill(0xff0000);
-	tempGraphics.drawRect(0, 0, PX_SIZE, PX_SIZE);
+	tempGraphics.beginFill(0x000000);
+	tempGraphics.drawRect(0, 0, PX_SIZE * GRID_X, PX_SIZE * GRID_Y);
 	tempGraphics.endFill();
-	redSquare = tempGraphics.generateTexture();
-
-	tempGraphics.beginFill(0xaaaaaa);
-	tempGraphics.drawRect(0, 0, PX_SIZE, PX_SIZE);
-	tempGraphics.endFill();
-	graySquare = tempGraphics.generateTexture();
-
-	tempGraphics.beginFill(0x0000ff);
-	tempGraphics.drawRect(0, 0, PX_SIZE, PX_SIZE);
-	tempGraphics.endFill();
-	blueSquare = tempGraphics.generateTexture();
+	blackSquare = tempGraphics.generateTexture();
 
 	for (var i = 0; i < GRID_X; i++) {
 		for (var j = 0; j < GRID_Y; j++) {
 			game.add.sprite(PX_SIZE * i, PX_SIZE * j, "floor");
 		}
 	}
+
+	spriteLayer = game.add.group();
+	HUDLayer = game.add.group();
+
+	transitionSprite = game.add.sprite(0, 0, blackSquare);
+	HUDLayer.add(transitionSprite);
+	transitionSprite.x = -PX_SIZE * GRID_X;
 
 	loadLevel(0);
 
@@ -700,6 +709,7 @@ function update() {
 	if (resetKey.isDown) {
 		if (!resetKeyPressed) {
 			resetKeyPressed = true;
+			clearTimeout(playerDeathReset);
 			reset();
 		}
 	} else {
@@ -894,6 +904,78 @@ function pulseEnd () {
 	}
 }
 
+var transitionType = "fade";
+function transition (out) {
+	var xStart = -PX_SIZE * GRID_X;
+	var yStart = -PX_SIZE * GRID_Y;
+	var xEnd = PX_SIZE * GRID_X;
+	var yEnd = PX_SIZE * GRID_Y;
+	var alphaStart = 1;
+	var alphaEnd = 1;
+
+	if (transitionType === "up") {
+		if (out) {
+			yStart = 0;
+		} else {
+			yEnd = 0;
+		}
+		xStart = 0;
+		xEnd = 0;
+	}
+	if (transitionType === "down") {
+		if (out) {
+			yStart = 0;
+			yEnd = -PX_SIZE * GRID_Y;
+		} else {
+			yStart = -PX_SIZE * GRID_Y;
+			yEnd = 0;
+		}
+		xStart = 0;
+		xEnd = 0;
+	}
+	if (transitionType === "left") {
+		if (out) {
+			xStart = 0;
+			xEnd = -PX_SIZE * GRID_X;
+		} else {
+			xStart = PX_SIZE * GRID_X;
+			xEnd = 0;
+		}
+		yStart = 0;
+		yEnd = 0;
+	}
+	if (transitionType === "right") {
+		if (out) {
+			xStart = 0;
+			xEnd = PX_SIZE * GRID_X;
+		} else {
+			xStart = -PX_SIZE * GRID_X;
+			xEnd = 0;
+		}
+		yStart = 0;
+		yEnd = 0;
+	}
+	if (transitionType === "fade") {
+		if (out) {
+			alphaStart = 1;
+			alphaEnd = 0;
+		} else {
+			alphaStart = 0;
+			alphaEnd = 1;
+		}
+		xStart = 0;
+		xEnd = 0;
+		yStart = 0;
+		yEnd = 0;
+	}
+
+	transitionSprite.x = xStart;
+	transitionSprite.y = yStart;
+	transitionSprite.alpha = alphaStart;
+	var transitionTween = game.add.tween(transitionSprite).to({x: xEnd, y: yEnd, alpha: alphaEnd}, 250);
+	transitionTween.start();
+}
+
 function unloadLevel () {
 	for (var i = 0; i < entityList.length; i++) {
 		entityList[i].markedForDeletion = true;
@@ -906,10 +988,15 @@ function unloadLevel () {
 
 function loadLevel (levelIndex) {
 	if (curLevelIndex !== undefined) {
-		unloadLevel();
+		levelLoaded = false;
+		transition();
 		setTimeout(function(){
-			loadLevelActual(levelIndex);
-		}, 500);
+			unloadLevel();
+			setTimeout(function(){
+				loadLevelActual(levelIndex);
+				transition(true);
+			}, 50);
+		}, 250);
 	} else {
 		loadLevelActual(levelIndex);
 	}
@@ -1015,9 +1102,10 @@ function onGameResume () {
 }
 
 function reset () {
-	unloadLevel();
-	setTimeout(function(){
-		loadLevel(curLevelIndex);
-		pulseState = false;
-	}, 500);
+	// unloadLevel();
+	transitionType = "fade";
+	loadLevel(curLevelIndex);
+	pulseState = false;
+	// setTimeout(function(){
+	// }, 50);
 }
