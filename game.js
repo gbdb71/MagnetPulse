@@ -223,9 +223,9 @@ function Tile () {
                     player.die();
                 }
             }
-            return;
+            // return;
         }
-        if (this.hasEntityInTypeArray([HOLE])) {
+        if (!pulseState && this.hasEntityInTypeArray([HOLE])) {
             for (var i = 0; i < this.entities.length; i++) {
                 if (this.entities[i].inTypeArray(INTERACT_WITH_GROUND)) {
                     this.entities[i].fall();
@@ -1086,7 +1086,7 @@ function loadLevelActual (levelIndex) {
     for (var i = 0; i < levelArray.length; i++) {
         for (var j = 0; j < levelArray[i].length; j++) {
             var newType;
-            var newChannel;
+            var newChannel = undefined;
             switch (levelArray[i][j]) {
                 default:
                 case ".":
@@ -1134,7 +1134,7 @@ function loadLevelActual (levelIndex) {
                 case "Q":
                     newType = NPC;
                     break;
-                                    }
+            }
 
             if (newType !== undefined) {
                 entitiesToAdd.push({x: j, y: i, type: newType, channel: newChannel});
