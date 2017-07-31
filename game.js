@@ -932,7 +932,9 @@ function transition (out) {
 	if (transitionType === "up") {
 		if (out) {
 			yStart = 0;
+			yEnd = -PX_SIZE * GRID_Y;
 		} else {
+			yStart = PX_SIZE * GRID_Y;
 			yEnd = 0;
 		}
 		xStart = 0;
@@ -941,7 +943,7 @@ function transition (out) {
 	if (transitionType === "down") {
 		if (out) {
 			yStart = 0;
-			yEnd = -PX_SIZE * GRID_Y;
+			yEnd = PX_SIZE * GRID_Y;
 		} else {
 			yStart = -PX_SIZE * GRID_Y;
 			yEnd = 0;
