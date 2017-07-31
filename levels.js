@@ -226,7 +226,7 @@ var levels = [
  "WWWW...H.H..WWWW",
  "WWWW.bxWXW..WWQ.",
  "WWWW...WYWybWW..",
- "WWWW.H...H...W.W",
+ "WWWW.HH..H...W.W",
  "WWWW.nH..H...W.W",
  "WWWWZWWWHW.....W",
  "WWWW.WWWzWWWWWWW",

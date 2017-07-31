@@ -54,6 +54,9 @@ function preload() {
     game.load.audio("switch_sfx", "sound/Plate.wav");
     game.load.audio("death_sfx", "sound/Death.wav");
     game.load.audio("fall_sfx", "sound/Fall.wav");
+    game.load.audio("npc_sfx", "sound/NPC.wav");
+
+    game.load.audio("bgm", "sound/MagnetGameOverworld.ogg");
 
     upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
     downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
@@ -108,6 +111,7 @@ entityDic[PULL_BLOCK] = {image: "pull", explode: ["pull_top_left_piece", "pull_t
 entityDic[NPC] = {image: "question"};
 
 var SOLID_TYPES_BLOCK = [WALL, STONE_BLOCK, PULL_BLOCK, PUSH_BLOCK, DOOR, NPC];
+var SOLID_TYPES_PLAYER = [WALL, STONE_BLOCK, PULL_BLOCK, PUSH_BLOCK, DOOR, NPC, HOLE];
 var PUSH_TYPES_PLAYER = [STONE_BLOCK, PULL_BLOCK, PUSH_BLOCK];
 var REACTS_TO_PULSE = [PULL_BLOCK, PUSH_BLOCK];
 var INTERACT_WITH_GROUND = [STONE_BLOCK, PULL_BLOCK, PUSH_BLOCK, TYPE_PLAYER];
@@ -157,7 +161,11 @@ var deathSound;
 var fallSound;
 var npcSound;
 
+var bgmSound;
+
 var playerDeathReset;
+
+var NPCSpoken = false;
 
 function Tile () {
     this.entities = [];
@@ -381,8 +389,11 @@ function Entity (x, y, type, data) {
             var entitiesAtCoord = findEntitiesAtCoord(xPos, yPos);
             for (var i = 0; i < entitiesAtCoord.length; i++) {
                 var curEntity = entitiesAtCoord[i];
-
-                if (curEntity.inTypeArray(SOLID_TYPES_BLOCK)) {
+                var collisionCheckArray = SOLID_TYPES_BLOCK;
+                if (this.type === TYPE_PLAYER) {
+                	collisionCheckArray = SOLID_TYPES_PLAYER;
+                }
+                if (curEntity.inTypeArray(collisionCheckArray)) {
                     if (curEntity.type === DOOR && channels[curEntity.data.channel].on) {
                         // Do nothing, allow entity to move through
                     } else {
@@ -394,11 +405,13 @@ function Entity (x, y, type, data) {
                                     return;
                                 }
                             }
-                            else if (curEntity.type === NPC)
+                            else if (curEntity.type === NPC && !NPCSpoken)
                             {
                                 // Show this level's NPC message
                                 var mainText = document.getElementById("MainText")
                                 mainText.innerText = levelInfo[curLevelIndex].text;
+                                npcSound.play();
+                                NPCSpoken = true;
                             }
                         }
                         xDiff = 0;
@@ -685,7 +698,10 @@ function create() {
     switchSound = game.add.audio("switch_sfx");
     deathSound = game.add.audio("death_sfx");
     fallSound = game.add.audio("fall_sfx");
-    npcSound = game.add.audio("switch_sfx");
+    npcSound = game.add.audio("npc_sfx", 0.5);
+
+    bgmSound = game.add.audio("bgm", 0.7, true);
+    bgmSound.play();
 
     game.onPause.add(onGamePause, this);
     game.onResume.add(onGameResume, this);
@@ -1059,6 +1075,7 @@ function loadLevel (levelIndex) {
     // Reset main text
     var mainText = document.getElementById("MainText")
     mainText.innerText = " ";
+    NPCSpoken = false;
 }
 
 var curLevelIndex;
