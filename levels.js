@@ -275,7 +275,7 @@ var levels = [
 
 
  var levelInfo = [
- 	{advance: "up", charges: 0, text: "Welcome to Magnet Pulse! Press R to reset."},
+ 	{advance: "up", charges: 0, text: "Welcome to Polarized! Press R to reset."},
  	{advance: "right", charges: 1, text: "Spacebar to pulse! Careful, it's limited."},
  	{advance: "right", charges: 1, text: "Nice job so far! Make sure to use your pulses wisely."},
  	{advance: "right", charges: 1, text: "Magnetic force is not stopped by walls... Cool!"},
