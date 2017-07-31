@@ -285,7 +285,7 @@ var levels = [
  	{advance: "left", charges: 1, text: "Will the same trick work again?"},
  	{advance: "down", charges: 4, text: "This is the Magnet Maze!"},
  	{advance: "down", charges: 2, text: "This one looks tricky! Careful around the pits!"},
- 	{advance: "left", charges: 2, text: "I'm sure this will be no problem for you with your expertise."},
+ 	{advance: "left", charges: 2, text: "This will be no problem for you with your expertise."},
  	{advance: "left", charges: 2, text: "Even I had trouble with this one."},
  	{advance: "down", charges: 3, text: "A very difficult puzzle! Try thinking backwards."},
  	{advance: "right", charges: 4, text: "The final challenge."},
