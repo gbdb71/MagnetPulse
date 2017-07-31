@@ -28,6 +28,21 @@ function preload() {
 	game.load.image("player_bottom_left_piece", "img/CharacterShatter3.png");
 	game.load.image("player_bottom_right_piece", "img/CharacterShatter4.png");
 
+	game.load.image("stone_top_left_piece", "img/BlockShatter1.png");
+	game.load.image("stone_top_right_piece", "img/BlockShatter2.png");
+	game.load.image("stone_bottom_left_piece", "img/BlockShatter3.png");
+	game.load.image("stone_bottom_right_piece", "img/BlockShatter4.png");
+
+	game.load.image("push_top_left_piece", "img/NorthShatter1.png");
+	game.load.image("push_top_right_piece", "img/NorthShatter2.png");
+	game.load.image("push_bottom_left_piece", "img/NorthShatter3.png");
+	game.load.image("push_bottom_right_piece", "img/NorthShatter4.png");
+
+	game.load.image("pull_top_left_piece", "img/SouthShatter1.png");
+	game.load.image("pull_top_right_piece", "img/SouthShatter2.png");
+	game.load.image("pull_bottom_left_piece", "img/SouthShatter3.png");
+	game.load.image("pull_bottom_right_piece", "img/SouthShatter4.png");
+
 	game.load.spritesheet("door_0", "img/ForcefieldSpritesheetX.png", 48, 48, 6);
 	game.load.spritesheet("door_1", "img/ForcefieldSpritesheetY.png", 48, 48, 6);
 	game.load.spritesheet("door_2", "img/ForcefieldSpritesheetZ.png", 48, 48, 6);
@@ -86,9 +101,9 @@ entityDic[SWITCH] = {image: ["switch_0", "switch_1", "switch_2"]};
 entityDic[TYPE_PLAYER] = {image: "player", explode: ["player_top_left_piece", "player_top_right_piece", "player_bottom_left_piece", "player_bottom_right_piece"]};
 entityDic[WALL] = {image: "wall"};
 entityDic[DOOR] = {image: ["door_0", "door_1", "door_2"]};
-entityDic[STONE_BLOCK] = {image: "stone"};
-entityDic[PUSH_BLOCK] = {image: "push"};
-entityDic[PULL_BLOCK] = {image: "pull"};
+entityDic[STONE_BLOCK] = {image: "stone", explode: ["stone_top_left_piece", "stone_top_right_piece", "stone_bottom_left_piece", "stone_bottom_right_piece"]};
+entityDic[PUSH_BLOCK] = {image: "push", explode: ["push_top_left_piece", "push_top_right_piece", "push_bottom_left_piece", "push_bottom_right_piece"]};
+entityDic[PULL_BLOCK] = {image: "pull", explode: ["pull_top_left_piece", "pull_top_right_piece", "pull_bottom_left_piece", "pull_bottom_right_piece"]};
 entityDic[NPC] = {image: "question"};
 
 var SOLID_TYPES_BLOCK = [WALL, STONE_BLOCK, PULL_BLOCK, PUSH_BLOCK, DOOR, NPC];
@@ -209,6 +224,21 @@ function Tile () {
 			}
 		}
 		this.handleSwitch();
+		if (this.hasEntityInTypeArray([DOOR])) {
+			var doorOn = false;
+			for (var i = 0; i < this.entities.length; i++) {
+				if (this.entities[i].type === DOOR && !this.entities[i].channelState) {
+					doorOn = true;
+				}
+			}
+			if (doorOn) {
+				for (var i = 0; i < this.entities.length; i++) {
+					if (this.entities[i].inTypeArray(INTERACT_WITH_GROUND)) {
+						this.entities[i].die();
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -585,6 +615,7 @@ function adjustChannel (channelNum, isOn) {
 			for (var i = 0; i < entityList.length; i++) {
 				if (entityList[i].data && entityList[i].data.channel !== undefined && entityList[i].data.channel === channelNum) {
 					entityList[i].updateChannel(isOn);
+					tileArray[entityList[i].x][entityList[i].y].update();
 				}
 			}
 		}
@@ -594,6 +625,7 @@ function adjustChannel (channelNum, isOn) {
 			for (var i = 0; i < entityList.length; i++) {
 				if (entityList[i].data && entityList[i].data.channel !== undefined && entityList[i].data.channel === channelNum) {
 					entityList[i].updateChannel(isOn);
+					tileArray[entityList[i].x][entityList[i].y].update();
 				}
 			}
 		}
